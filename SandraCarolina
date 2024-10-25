@@ -1,0 +1,167 @@
+int numCircles = 10;                  // Number of circles
+int numFlowers = 50;                 // Number of floating flowers
+
+// Arrays to store the properties of each circle and flower
+int[] circleX = new int[numCircles];
+int[] circleY = new int[numCircles];
+int[] circleSpeed = new int[numCircles];
+float[] circleRadius = new float[numCircles];
+boolean[] isMovingRight = new boolean[numCircles];
+char[] circleLabel = new char[numCircles];
+int[] circleColor = new int[numCircles];
+
+int[] flowerX = new int[numFlowers];
+int[] flowerY = new int[numFlowers];
+int[] flowerSpeed = new int[numFlowers];
+
+void setup() {
+  size(800, 600);           // Set the canvas size
+  background(300);          // Dark blue background
+
+  initializeCircles();       // Initialize the properties of each circle
+  initializeFlowers();       // Initialize the properties of each flower
+}
+
+void draw() {
+  background(300);          // Clear the screen on each frame
+  
+  // Draw and update flowers
+  for (int i = 0; i < numFlowers; i++) {
+    moveFlower(i);         // Move each flower slightly
+    drawFlower(i);         // Draw each floating flower
+  }
+
+  // Loop through each circle and update its properties
+  for (int i = 0; i < numCircles; i++) {
+    moveCircle(i);             // Move each circle
+    changeDirection(i);        // Check if the circle hits edges and reverse direction
+    updateColorAndLabel(i);    // Update color and label based on mouse position
+    drawCircle(i);             // Draw the circle and label
+  }
+}
+
+// Function to initialize the properties of each circle
+void initializeCircles() {
+  for (int i = 0; i < numCircles; i++) {
+    circleX[i] = int(random(50, width - 50));     // Random X position
+    circleY[i] = int(random(50, height - 50));    // Random Y position
+    circleSpeed[i] = int(random(5, 15));          // Random speed
+    circleRadius[i] = random(60, 60);             // Random radius
+    isMovingRight[i] = random(1) > 0.5;           // Random direction
+    circleLabel[i] = 'C';                         // Initial label
+    circleColor[i] = color(128, 0, 128);          // Initial color (purple)
+  }
+}
+
+// Function to initialize the properties of each flower
+void initializeFlowers() {
+  for (int i = 0; i < numFlowers; i++) {
+    flowerX[i] = int(random(0, width));         // Random X position
+    flowerY[i] = int(random(0, height));        // Random Y position
+    flowerSpeed[i] = int(random(1, 3));         // Small random speed for floating effect
+  }
+}
+
+// Function to move the flower slightly to simulate floating
+void moveFlower(int i) {
+  flowerY[i] += flowerSpeed[i];                 // Move flower downward
+  if (flowerY[i] > height) {                    // If flower goes off the bottom, reset to top
+    flowerY[i] = 0;
+    flowerX[i] = int(random(0, width));         // Reset X position randomly
+  }
+}
+
+// Function to draw each flower
+void drawFlower(int i) {
+  fill(255);                                   // White color for flowers
+  stroke(255);                                 // White stroke for the petals
+  strokeWeight(2);
+
+  // Draw a simple flower shape with 5 petals
+  for (int angle = 0; angle < 360; angle += 72) { // Loop to create 5 petals
+    float petalX = flowerX[i] + cos(radians(angle)) * 10;  // X position for petal
+    float petalY = flowerY[i] + sin(radians(angle)) * 10;  // Y position for petal
+    ellipse(petalX, petalY, 8, 8);                         // Draw petal
+  }
+
+  // Draw the center of the flower
+  fill(255);
+  noStroke();
+  ellipse(flowerX[i], flowerY[i], 6, 6);       // Center of the flower
+}
+
+// Function to move the circle based on direction
+void moveCircle(int i) {
+  if (isMovingRight[i]) {
+    circleX[i] += circleSpeed[i];  // Move right
+  } else {
+    circleX[i] -= circleSpeed[i];  // Move left
+  }
+}
+
+// Function to check if the circle hits edges and change direction
+void changeDirection(int i) {
+  if (circleX[i] > width - circleRadius[i] / 2 || circleX[i] < circleRadius[i] / 2) {
+    isMovingRight[i] = !isMovingRight[i];  // Reverse direction if hitting edges
+  }
+}
+
+// Function to update the circle color and label based on mouse position
+void updateColorAndLabel(int i) {
+  if (mouseX < width / 2) {
+    circleColor[i] = color(128, 0, 128);  // Purple if mouse is on left
+    circleLabel[i] = 'C';                 // Label set to 'C'
+  } else {
+    circleColor[i] = color(255, 105, 180); // Pink if mouse is on 
+    circleLabel[i] = 'I';                 // Label set to 'I'
+  }
+}
+
+// Function to draw the circle and its label
+void drawCircle(int i) {
+  fill(circleColor[i]);         // Set fill color for the circle
+  ellipse(circleX[i], circleY[i], circleRadius[i], circleRadius[i]);  // Draw circle
+  
+  fill(255);                    // White color for the text
+  textAlign(CENTER, CENTER);     // Center the text inside the circle
+  textSize(50);                 // Set text size
+  text(circleLabel[i], circleX[i], circleY[i]);  // Draw label inside the circle
+}
+
+// Function to handle key presses and change attributes like speed, size, and label
+void keyPressed() {
+  handleInput();   // Call the function to handle key input for all circles
+}
+
+// Function to handle input for speed, direction, size, and label changes
+void handleInput() {
+  for (int i = 0; i < numCircles; i++) {
+    // Increase speed when 'UP' key is pressed
+    if (keyCode == UP) {
+      circleSpeed[i] += 2;
+    }
+    
+    // Decrease speed when 'DOWN' key is pressed
+    if (keyCode == DOWN) {
+      circleSpeed[i] = max(2, circleSpeed[i] - 2);  // Prevent speed from going negative
+    }
+    
+    // Change direction when 'LEFT' or 'RIGHT' arrow key is pressed
+    if (keyCode == LEFT || keyCode == RIGHT) {
+      isMovingRight[i] = !isMovingRight[i];  // Reverse direction
+    }
+    
+    // Change circle size when '+' or '-' keys are pressed
+    if (key == '+') {
+      circleRadius[i] += 10;  // Increase size
+    }
+    if (key == '-') {
+      circleRadius[i] = max(10, circleRadius[i] - 10);  // Decrease size, but don't go below 10
+    }
+    
+    // Change circle label to any character typed
+    if (key != CODED) {
+      circleLabel[i] = key;  // Set the label to the key pressed
+    }
+  }
+}
